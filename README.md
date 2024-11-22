@@ -18,21 +18,12 @@ Starting from the transactional database 'database.db' which i will refer as the
 - Create the Out of Time (OOT) database 
 - Construction of the Recency Frequency Value (RFV) for user segmentation
 - Training of predictive model using SEMMA
-- Deploy using mlflow
+- Deploy using MLFLOW
 
 ## 💼 Bussiness Problem
 
-Twitch is the most relevant plataform for livestreams in the world, everyday, millions are connect and interacting with live content for diverse public, such as games, music, arts but also programming and data science live. Twtich has enmbended a points system to recompense from diferent interactions with the chat bot, and this points can be futher redeemed in prizes associated with the plataform, such as highlighted mesages, emotes, but also it gives the possibilide of the content creator to have it own points system, where users can change this points to products that are disponivel by the twitch content creator, this created an market with milions of transactions per day, wich can be capitilized by the content creator. In this sense, losing active members is a loss in potential capital growth for the creator, so, knowing with users are more probable or unprobled to exit the active base, and how this active base is segmented can give meaninful insights for decesion making focusing the reation of those groups. 
+Twitch is the most relevant plataform for livestreams in the world, everyday, millions are connect and interacting with live content for diverse public, such as games, music, arts but also programming and data science live. Twtich has enmbended a points system to recompense from diferent interactions with the chat bot, and this points can be futher redeemed in prizes associated with the plataform, such as highlighted mesages, emotes, but also it gives the possibilide of the content creator to have it own points system, where users can change this points to products that are disponivel by the twitch content creator, this created an market with milions of transactions per day, wich can be capitilized by the content creator. In this sense, losing active members is a loss in potential capital growth for the creator, so, knowing with users are more probable or unprobled to exit the active base, and how this active base is segmented can give meaninful insights for decesion making focusing the retention of those groups. 
 
-**Tipos de Análise Realizados:**
-- [Insira o tipo de análise, por exemplo, "Análise de Sentimento"]
-- [Outro tipo de análise, por exemplo, "Tendências de Mercado"]
-- [Mais um tipo, por exemplo, "Padrões de Comportamento do Consumidor"]
-
-**Principais Indicadores Chave de Desempenho:**
-- [Primeiro indicador, por exemplo, "Taxa de Conversão"]
-- [Segundo indicador, por exemplo, "Retenção de Clientes"]
-- [Terceiro indicador, por exemplo, "Satisfação do Cliente"]
 
 ## Dataset
 
@@ -284,6 +275,60 @@ In this workflow, `train_mlflow.py` and `predict_mlflow.py` handle the SEMMA pro
 | Train    | 0.82         | 0.86        | 0.73          | 0.75       |
 | Test     | 0.71         | 0.81        | 0.72          | 0.58       |
 | OOT      | 0.72         | 0.81        | 0.69          | 0.43       |
+
+
+## Segmenting active user database usin Recency, Frequency and Value
+
+## User Life Cycler trought rfv_recency.py
+
+We will fetch the most recent results in our fs_general table. We will use the cumulative recency curve to agroup our in 6 stages of user life cycle based upon the recency and the age in the active base
+it will follow this rules
+
+  if row['baseAgeDays'] <= 7:
+        return 'New User'
+    elif row['recencyDays'] <= 2:
+        return 'Super Active User'
+    elif row['recencyDays'] <= 6:
+        return 'Active User'
+    elif row['recencyDays'] <= 12:
+        return 'Cold Active'
+    elif row['recencyDays'] <= 18:
+        return 'Unengaged'
+    else:
+        return 'Pre-Churn'
+
+then we will use an decision tree model to atuomatate the classification 
+
+X = result[['recencyDays', 'baseAgeDays']].values  # Using recencyDays mean as features
+y = result.index  # Lifecycle stages as labels
+
+# Train a Decision Tree Classifier
+clf = tree.DecisionTreeClassifier(min_samples_leaf=1, max_depth=None, random_state=42)
+clf.fit(X, y)
+
+# Save the trained model and feature names for future use
+model = {
+    "model": clf,
+    "features": ['recencyDays', 'baseAgeDays']  # Use the column used in training
+}
+
+
+This will result in this table: 
+
+| **LifeCycle**         | **recencyDays (mean)** | **count** | **baseAgeDays (mean)** |
+|------------------------|------------------------|-----------|-------------------------|
+| Active User           | 3.59                  | 82        | 71.45                  |
+| Cold Active           | 9.25                  | 63        | 82.84                  |
+| New User              | 2.89                  | 56        | 3.63                   |
+| Pre-Churn             | 21.00                 | 23        | 50.87                  |
+| Super Active User     | 1.23                  | 137       | 81.04                  |
+
+
+We see two interesting things here. Super Active Users have in mean the largest age in the base, losing only to Cold Actives, they also have the lower recency. With mean that this class, with represent the largest group in our database, are older user that have high recency. 
+
+The second is that Pre-Churn users have the lower mean rencency, they interact with the live a lot less than any other category, this relation is so high that an pre-churn user have the recency in the live 20x lesser than a super active user, and are newer by almost haf in base age than the superactive ones but also have the lowest mean age in the base.
+
+
 
 
 ## 🤖 Modelagem e Avaliação
