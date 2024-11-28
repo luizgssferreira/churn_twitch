@@ -22,7 +22,7 @@ Starting from the transactional database 'database.db' which i will refer as the
 
 ## 💼 Bussiness Problem
 
-Twitch is the most relevant plataform for livestreams in the world, everyday, millions are connect and interacting with live content for diverse public, such as games, music, arts but also programming and data science live. Twtich has enmbended a points system to recompense from diferent interactions with the chat bot, and this points can be futher redeemed in prizes associated with the plataform, such as highlighted mesages, emotes, but also it gives the possibilide of the content creator to have it own points system, where users can change this points to products that are disponivel by the twitch content creator, this created an market with milions of transactions per day, wich can be capitilized by the content creator. In this sense, losing active members is a loss in potential capital growth for the creator, so, knowing with users are more probable or unprobled to exit the active base, and how this active base is segmented can give meaninful insights for decesion making focusing the retention of those groups. 
+Twitch is the most relevant plataform for livestreams in the world, everyday, millions are connect and interacting with live content for diverse public, such as games, music, arts but also programming and data science live. Twtich has enmbended a points system to recompense from diferent interactions with the chat bot, and this points can be futher redeemed in prizes associated with the plataform, such as highlighted mesages, emotes, but also it gives the possibilide of the content creator to have it own prize system, where users can change this points to products that are avalible by the twitch content creator, this created an market with milions of transactions per day, wich can be capitilized by the content creator. In this sense, losing active members in the community is a loss in potential capital growth for the creator, so, knowing with users are more probable or unprobled to exit the active base, and how this active base can be  segmented can give meaninful insights for decesion making focusing the retention of those groups. 
 
 
 ## Dataset
@@ -272,10 +272,56 @@ In this workflow, `train_mlflow.py` and `predict_mlflow.py` handle the SEMMA pro
 
 | **Base** | **Accuracy** | **ROC AUC** | **Precision** | **Recall** |
 |----------|--------------|-------------|---------------|------------|
-| Train    | 0.82         | 0.86        | 0.73          | 0.75       |
-| Test     | 0.71         | 0.81        | 0.72          | 0.58       |
-| OOT      | 0.72         | 0.81        | 0.69          | 0.43       |
+| Train    | 0.77         | 0.85        | 0.72          | 0.78       |
+| Test     | 0.76         | 0.81        | 0.70          | 0.83       |
+| OOT      | 0.73         | 0.80        | 0.68          | 0.65       |
 
+## In-Depth Analysis of Model Performance in the Context of Customer Churn
+
+In the script `best_model.py`, we conduct an in-depth analysis of our model's performance, focusing on its implications for addressing the churn problem in our business context. The key findings from this analysis are visualized in the `train > plots` directory and discussed below.
+
+### Evaluating Model Recall through Cumulative Gains
+
+To assess our model's ability to identify churners, we analyze how it performs across different probability thresholds. The model ranks users by their likelihood of churn, allowing us to prioritize the top segments based on predicted risk. Let’s break this down:
+
+1. **Top 20% of Users by Predicted Churn Probability**  
+   By targeting the top 20% of users most likely to churn (as predicted by the model), we capture nearly 40% of all actual churners in the dataset. This is **double the effectiveness** of a baseline random model, which would only capture 20% of churners in the same segment.
+
+2. **Top 30% of Users**  
+   Expanding to the top 30% of users, we capture about 50% of actual churners.
+
+3. **Full Dataset**  
+   By covering approximately 70% of the dataset, we can capture 100% of actual churners. This progression illustrates the model's ability to prioritize effectively, as seen in the cumulative gain plot below:
+
+   **[Insert cumulative gain plot here]**
+
+### Lift Curve: Model Effectiveness Compared to Random Baseline
+
+The lift curve further demonstrates the effectiveness of our model. It quantifies how much better the model performs compared to random guessing. For example:
+
+- When we focus on the 100 users with the highest predicted probabilities of churn:
+  - **Model Performance**: Among these 100 users, 88% are true churners.
+  - **Baseline Performance**: Without the model, only 44% of these users would be true churners, based on the overall churn rate.
+
+This indicates the model is nearly **twice as effective** at identifying churners compared to a random baseline. These results are consistent with the lift curve, showcasing the model's strong predictive power.
+
+### KS Statistic: Measuring Model Discrimination
+
+To further validate the model's performance, we use the KS (Kolmogorov-Smirnov) statistic. This metric measures the model's ability to distinguish between churners (class 1) and non-churners (class 0). 
+
+#### How the KS Statistic Works
+- The KS statistic calculates the maximum distance between the cumulative distribution of churners and non-churners across ordered probabilities.
+- A higher KS value indicates better discrimination. Ideally, the model should produce well-separated probability distributions for the two classes.
+
+#### Results
+Using the following code:
+
+```python
+skplt.metrics.plot_ks_statistic(y_test, y_test_proba, title="KS Statistic (Class 1 = Churn)")
+
+[inser ks plot here]
+
+This results show a strong separtion between the two curves, confirming that the model effectively distinguish between churners and non-churners
 
 ## Segmenting active user database usin Recency, Frequency and Value
 
