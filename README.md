@@ -318,6 +318,7 @@ Using the following code:
 
 ```python
 skplt.metrics.plot_ks_statistic(y_test, y_test_proba, title="KS Statistic (Class 1 = Churn)")
+```
 
 [inser ks plot here]
 
@@ -325,10 +326,17 @@ This results show a strong separtion between the two curves, confirming that the
 
 ## Segmenting active user database usin Recency, Frequency and Value
 
-## User Life Cycler trought rfv_recency.py
+## User Life Cycle trought rfv_recency.py
+
+In this section we will assigns a lifecycle stage to a user based on their recency and age in the base.
+What is User Life Cycle? 
+
+Its a way to describe the different steps of an user engagement, we can use this to see a overview of our active base, classifying and counting the number for each life cycle step 
 
 We will fetch the most recent results in our fs_general table. We will use the cumulative recency curve to agroup our in 6 stages of user life cycle based upon the recency and the age in the active base
 it will follow this rules
+
+```python
 
   if row['baseAgeDays'] <= 7:
         return 'New User'
@@ -342,6 +350,7 @@ it will follow this rules
         return 'Unengaged'
     else:
         return 'Pre-Churn'
+
 
 then we will use an decision tree model to atuomatate the classification 
 
@@ -358,8 +367,11 @@ model = {
     "features": ['recencyDays', 'baseAgeDays']  # Use the column used in training
 }
 
+````
 
-This will result in this table: 
+[recency plot] 
+
+The code in rfv_recency.py will result in this table: 
 
 | **LifeCycle**         | **recencyDays (mean)** | **count** | **baseAgeDays (mean)** |
 |------------------------|------------------------|-----------|-------------------------|
@@ -374,46 +386,178 @@ We see two interesting things here. Super Active Users have in mean the largest 
 
 The second is that Pre-Churn users have the lower mean rencency, they interact with the live a lot less than any other category, this relation is so high that an pre-churn user have the recency in the live 20x lesser than a super active user, and are newer by almost haf in base age than the superactive ones but also have the lowest mean age in the base.
 
+This is helpfull because we want to adress differently users based upon their lifestyle stage, thinking about retention.
+
+## User Frequency and value trought rfv_frecency.py
+
+We the LifeCycle table at hands the next step will be creating the segmentation though frequency and value. We will use our frequencyDays variable and pointsValue for value, witch represents the total points earned in the last 21 days.  
+
+[rfv scatter] 
+
+I will start with a simple scatterplot of frequency vs value. Then i wil contruct a "dull" clustering algorithm using aglomerative clustering. this will help as a sugestion of how our users can be segmented under those two features. With this initial painting, we can start based upon the headlines of our model, drawing our thresholds. Here i divide these initial groupíng in 12 segments as following: 
+
+        "LL": "Low Value, Low Frequency",
+        "LM": "Low Value, Medium Frequency",
+        "LH": "Low Value, High Frequency",
+        "LV": "Low Value, Very High Frequency",
+        "ML": "Medium Value, Low Frequency",
+        "MM": "Medium Value, Medium Frequency",
+        "MH": "Medium Value, High Frequency",
+        "MV": "Medium Value, Very High Frequency",
+        "HL": "High Value, Low Frequency",
+        "HM": "High Value, Medium Frequency",
+        "HH": "High Value, High Frequency",
+        "HV": "High Value, Very High Frequency"
+
+This is what the segmentation looks like:
+
+[rfv thresholds plot]
+
+Then i can use this thresholds from the above figure to re-run a cluster algorithm, and apply thoes labes to our users. 
 
 
+```python
+def rf_cluster(row):
+    """
+    Assign RF clusters based on pointsValue and frequencyDays using predefined thresholds.
+    """
+    if row['pointsValue'] < 500:
+        if row['frequencyDays'] < 2.5:
+            return "LL"  # Low Value, Low Frequency
+        elif row['frequencyDays'] < 8.5:
+            return "LM"  # Low Value, Medium Frequency
+        elif row['frequencyDays'] < 13.5:
+            return "LH"  # Low Value, High Frequency
+        else:
+            return "LV"  # Low Value, Very High Frequency
 
-## 🤖 Modelagem e Avaliação
+    elif row['pointsValue'] < 1400:
+        if row['frequencyDays'] < 2.5:
+            return "ML"  # Medium Value, Low Frequency
+        elif row['frequencyDays'] < 8.5:
+            return "MM"  # Medium Value, Medium Frequency
+        elif row['frequencyDays'] < 13.5:
+            return "MH"  # Medium Value, High Frequency
+        else:
+            return "MV"  # Medium Value, Very High Frequency
 
-Utilizamos [insira as ferramentas ou métodos de modelagem usados, por exemplo, "algoritmos de machine learning como XGBoost e RandomForest"] para construir nosso modelo. As métricas de avaliação incluem [insira as métricas usadas, por exemplo, "precisão, recall e a área sob a curva ROC"].
+    else:
+        if row['frequencyDays'] < 2.5:
+            return "HL"  # High Value, Low Frequency
+        elif row['frequencyDays'] < 8.5:
+            return "HM"  # High Value, Medium Frequency
+        elif row['frequencyDays'] < 13.5:
+            return "HH"  # High Value, High Frequency
+        else:
+            return "HV"  # High Value, Very High Frequency
 
-![Inserir imagem](https://github.com/[SeuNomeDeUsuário]/[NomeDoProjeto]/assets/[IDdaTerceiraImagem])
+# Apply RF segmentation rules
+df['rf_cluster'] = df.apply(rf_cluster, axis=1)
+````
+Finally we will achieve this: 
 
-[Aqui, explique o que a imagem acima mostra e como ela é relevante para a avaliação do seu modelo.]
+[plot clluster final]
+
+Using the same logic as explained in the recency, we can apply a simple tree algorithm to take care of labeling.
+```python
+clf = tree.DecisionTreeClassifier(random_state=42, min_samples_leaf=1, max_depth=None)
+clf.fit(df[['frequencyDays', 'pointsValue']], df['rf_cluster'])
+
+# Save the model and features for future use
+model_freq_value = pd.Series(
+    {
+        "model": clf,
+        "features": ['frequencyDays', 'pointsValue']
+    }
+)
+```
+
+This is how our active base is distributed. 
+
+ RF Cluster | Description                           | Number of Customers | Percentage from Active Base (%) |
+|------------|---------------------------------------|---------------------|-------------------------|
+| LL         | Low Value, Low Frequency              | 218                 | 37.71%                  |
+| LM         | Low Value, Medium Frequency           | 112                 | 19.47%                  |
+| MH         | Medium Value, High Frequency          | 34                  | 5.92%                   |
+| MM         | Medium Value, Medium Frequency        | 18                  | 3.14%                   |
+| HV         | High Value, Very High Frequency       | 14                  | 2.43%                   |
+| HH         | High Value, High Frequency            | 8                   | 1.39%                   |
+| LH         | Low Value, High Frequency             | 5                   | 0.87%                   |
+| MV         | Medium Value, Very High Frequency     | 2                   | 0.35%                   |
+| HL         | High Value, Low Frequency             | 1                   | 0.17%                   |
+| ML         | Medium Value, Low Frequency           | 1                   | 0.17%                   |
+
+
+We see here that the largest half our (56%) is composed by low value and low to medium frequency users. 
 
 ## 📈 Insights and Conclusions
+With all this information in hands, in customer_profile.py we will wrap up all three information in a decision-making table:
+by uniting the probabilities from our churn model the LifeCycle segmentation and the Frequency Value segmentation we achieve this:
 
-[Resuma os principais insights obtidos e as conclusões do seu projeto. Por exemplo, "Nossa análise revelou que... Isso sugere que..."]
+| dtRef       | idCustomer                             | Life Cycle Segmentation | Frequency Value Segmentation | Churn Probability | dtUpdate                    |
+|-------------|----------------------------------------|-------------------------|------------------------------|------------|-----------------------------|
+| 2024-06-07  | 000ff655-fa9f-4baa-a108-47f581ec52a1  | Cold Active             | Low Value, Low Frequency     | 0.516375   | 2024-11-28 19:30:56.922235  |
+| 2024-06-07  | 0019bb9e-26d4-4ebf-8727-fc911ea28a92  | Super Active User       | Low Value, Low Frequency     | 0.058285   | 2024-11-28 19:30:56.922235  |
+| 2024-06-07  | 00a6d4c8-38e5-4e92-981e-4e4ac5084546  | Super Active User       | Medium Value, High Frequency | 0.010680   | 2024-11-28 19:30:56.922235  |
+| 2024-06-07  | 02cb6641-a115-4c53-a6ab-22b332d8e5e2  | Unengaged               | Low Value, Low Frequency     | 0.794619   | 2024-11-28 19:30:56.922235  |
+| 2024-06-07  | 0368a5c3-bc5d-45f2-b8a0-07e74ea1574f  | Active User             | Low Value, Low Frequency     | 0.274932   | 2024-11-28 19:30:56.922235  |
+| 2024-06-07  | 038d7c90-b7c3-46d2-b7ea-3db6fc63d625  | New User                | Low Value, Low Frequency     | 0.457405   | 2024-11-28 19:30:56.922235  |
+| 2024-06-07  | 043c4972-df0d-4181-8b77-dd6c351fdebc  | Active User             | Low Value, Medium Frequency  | 0.028294   | 2024-11-28 19:30:56.922235  |
+| 2024-06-07  | 044e95f2-8756-42bd-a0a3-d50708beb8da  | Active User             | Low Value, Medium Frequency  | 0.344889   | 2024-11-28 19:30:56.922235  |
+| 2024-06-07  | 04612efc-dc61-4434-90a1-afc1b43767c1  | Super Active User       | Low Value, High Frequency    | 0.074835   | 2024-11-28 19:30:56.922235  |
+| 2024-06-07  | 05bc8281-1c44-4682-a4a0-4726e30340e4  | New User                | Low Value, Low Frequency     | 0.562112   | 2024-11-28 19:30:56.922235  |
+
+With is a compreensive table the informs for the date of reference the Churn Probability for our churn ML model, the Life Cycle segmentation and The Frequency value segmentaion for all user in our active database.
+This is interising because we now have a full report for decision-making. For instance, we can account for different strategies when abording this customers aiming for retantion, one can relly on statregy that increse the frequency and value for unengaged, and cold active, while others can think of strategies for new users. We see a full logic here, as it appears that our super active user are the least probable of churning, as see above, while unengaged are fairly high. 
+
+[superactive vs unengaged proba plot]
 
 ## 📜 Project Structure
 
-A estrutura de diretórios do projeto foi organizada da seguinte forma:
+This is how our project directories are organized:
 ```
-├── README.md 
-├── data
-│ ├── processed
-│ └── raw
-├── models
-├── notebooks 
-├── reports
-│ └── figures 
+├── README.md
+├── data/
+│   ├── database.db
+│   └── feature_store.db
+├── models/
+│   ├── cluster_fv_01.pkl
+│   ├── cluster_rf_01.pkl
+│   └── rf_01.pkl
+├── src/
+│   ├── feature_store/
+│   │   ├── exec.sh
+│   │   ├── execute.py
+│   │   ├── fs_general.sql
+│   │   ├── fs_hour.sql
+│   │   ├── fs_points.sql
+│   │   ├── fs_products.sql
+│   │   └── fs_transactions.sql
+│   ├── predict/
+│   │   ├── customer_profile.py
+│   │   ├── etl.sql
+│   │   └── predict_mlflow.py
+│   ├── rfv/
+│   │   ├── rfv_frequency.py
+│   │   └── rfv_recency.py
+│   ├── train/
+│   │   ├── plots/
+│   │   │   ├── cumulative_gain_curve.png
+│   │   │   ├── ks_statistic.png
+│   │   │   ├── lift_curve.png
+│   │   │   ├── precision_recall_curve.png
+│   │   │   └── roc_curve.png
+│   │   ├── abt.sql
+│   │   ├── best_model.py
+│   │   ├── eda.py
+│   │   ├── train.py
+│   │   └── train_mlflow.py
+│   ├── pipeline.sh
+├── project_structure.py
 ├── requirements.txt
-├── src
-│ ├── __init__.py 
-│ ├── data
-│ │ └── [NomeDoScriptDeDados].py 
-│ ├── features
-│ │ └── [NomeDoScriptDeFeatures].py 
-│ ├── models
-│ │ ├── predict_model.py 
-│ │ └── train_model.py 
 
 ```
 
 ## 🚧 Project Next Steps 
 
-[Descreva os próximos passos para o seu projeto, por exemplo, "O próximo passo é implementar o modelo em um ambiente de produção para testar sua eficácia em tempo real."]
+As a next step i am to integrate this results in a GO.APP so we will have the complete cicle of our porject, that goes from feature engenieering trought modeling and finally an go app. I am also aim to test some feature managing, removing some variables that are not so contributive to the random forest, and try do adjust again, but overall i think we have a solid product, that can be helpful for twitch user retention strategies
