@@ -227,16 +227,43 @@ We automate the ingestion and transformation pipeline using exec.sh, which trigg
 
 # Creating the Analytical Base Table (ABT)
 
-## Creating the Target Variable: Flagging Churn
+# Creating the Analytical Base Table (ABT)
 
-A user is flagged as **churned** if they have not engaged with the platform or made any transactions for at least **21 days after their last recorded activity**. If no activity occurs within this period, the churn flag (`flChurn`) is set to `1`.
+## Some Caveats About Time-Series Modeling
 
-### Logic:
-- The **`abt.sql`** query identifies users with no transactions in the **`fs_general`** table for the **21-day period following their last activity** (`t1.dtRef`).
-- If no record exists (`t2.idCustomer IS NULL`), the user is marked as churned (`flChurn = 1`).
-- Otherwise, the flag is set to `0`, indicating the user remains active.
+In our time-series modeling, we define a user as part of the **active base** if they have interacted with the platform (performed any transactions or activities) within the last **21 days** (3 weeks) relative to a given **reference date**. It’s important to note that the **active user base** will change based on the reference date we select. By adjusting the reference date in the SQL code, we can observe how the number of active users and their associated statistics shift, while maintaining the same **21-day window** for assessing user activity.
 
-This flexible approach allows for easy adjustments if the definition of churn changes.
+However, using a single, static active base could lead to issues, especially when considering **seasonality** and **volume fluctuations** over time. If we only focus on one reference date, our model may miss trends or changes in behavior that arise over different time periods. To address this, we create **cohorts** that allow us to model users across multiple time periods, providing better control over volume and seasonality effects. By analyzing different cohorts, we can ensure that the model is more reflective of real-world user behavior.
+
+### Cohort Creation
+
+We create **four cohorts** based on different reference dates and an **Out-of-Time (OOT) split** to evaluate how the model performs when tested on a different time window than the one used for training. The OOT split serves as a validation step, helping us understand how well the model generalizes to new data from a future time period. 
+
+Each cohort represents a snapshot of the user base on the **1st day of each month**. This approach avoids the problem of replicating super-active users who might otherwise skew the model. By looking at the 1st day of each month for each cohort, we ensure that we are capturing a broad set of users, without over-representing those with frequent activity.
+
+### Creating the Target Variable: Flagging Churn
+
+The business problem of **churn** assumes that **recency** plays a key role: users with more recent activity are less likely to churn compared to those who have been inactive for a while. Instead of flagging churn on a daily basis (which would heavily emphasize recency), we take a slightly more balanced approach. By giving users a **21-day window** from their last recorded activity to return, we allow for some "grace period" before marking them as churned. This helps us avoid the potential bias of modeling churn purely based on recency.
+
+#### Churn Flagging Logic:
+
+A user is flagged as **churned** if they have not interacted with the platform or performed any transactions for at least **21 days** after their last recorded activity. The churn flag (`flChurn`) is set to `1` if no activity occurs within this period, indicating the user has churned. If the user is still active (i.e., interacts with the platform within the 21-day window), the flag is set to `0`.
+
+### SQL Query Logic to Flag Churn:
+
+The **`abt.sql`** query is designed to flag churn based on the following logic:
+- It first identifies users who have no transactions or activities in the **21-day period following their last recorded activity** (`t1.dtRef`).
+- Using a `LEFT JOIN`, it looks for records in `fs_general` for the same user (`t1.idCustomer`) 21 days after their last activity.
+- If **no matching record exists** in the future (i.e., `t2.idCustomer IS NULL`), the user is flagged as churned (`flChurn = 1`).
+- If a match exists (meaning the user has activity within the 21-day period), the flag is set to `0`, indicating the user remains active.
+
+### Adjusting for Cohorts and OOT:
+
+Since we are working with multiple cohorts, we ensure that each cohort is considered on the **1st day of the month** for its respective reference date. This way, we avoid the problem of tracking super-active users who could dominate the model if we used a different approach (e.g., looking at all active users across a given month).
+
+Additionally, the **OOT split** gives us a way to evaluate how the model performs on data from a future period, without having seen it during training. This is crucial for ensuring the model's ability to generalize and adapt to future trends in user behavior.
+
+This flexible approach to defining churn and creating cohorts allows for easy adjustments should the definition of churn evolve, ensuring that we can continuously improve and adapt the model over time.
 
 ---
 
