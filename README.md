@@ -510,6 +510,7 @@ df_recency["Cumulative Percentage"] = df_recency['Cumulative'] / df_recency['Cum
 
 # Plot the cumulative percentage against recency days
 plt.plot(df_recency["recencyDays"], df_recency["Cumulative Percentage"], label="Cumulative Percentage")
+```
 
 We achieve this segmentation: 
 
