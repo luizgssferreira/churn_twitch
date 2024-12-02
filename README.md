@@ -30,7 +30,6 @@ This ecosystem represents a valuable opportunity for creators to monetize their 
 
 ![Alt text](images/points_system.png)
 
-
 ## Dataset
 
 The dataset, sourced from **Teo Calvo’s (Teo Me Why) Twitch Points System**, captures real-world interactions within a loyalty program. It includes transactional data on point accrual, redemption, and customer behavior. The dataset is available on: https://www.kaggle.com/datasets/teocalvo/teomewhy-loyalty-system/data
