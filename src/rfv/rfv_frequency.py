@@ -41,7 +41,7 @@ sns.scatterplot(
     y="frequencyDays",
 )
 
-plt.title("Scatter Plot of Points vs. Frequency", fontsize=14)
+plt.title("RFV: Points (Value) vs. Frequency", fontsize=18, fontweight='bold')
 plt.xlabel("Points Value")
 plt.ylabel("Frequency Days")
 plt.show()

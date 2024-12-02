@@ -657,6 +657,10 @@ By aligning strategies with these insights, businesses can maximize retention, m
 
 ## 📈 Insights and Conclusions
 
+### **Objective** 3. 
+
+**Create a Churn Decision-Making Framework**
+
 In **`customer_profile.py`**, we consolidate the outputs of the churn prediction model, lifecycle segmentation, and frequency-value segmentation into a comprehensive decision-making table. This table provides actionable insights for retention strategies by highlighting:
 
 - **Churn Probability**: The likelihood of each user churning, as predicted by the ML model.
@@ -733,9 +737,11 @@ The project is organized as follows:
 - **`data/`**: Contains raw and processed databases.
 - **`models/`**: Stores trained models for segmentation and churn prediction.
 - **`src/`**: Houses scripts for feature engineering, training, and prediction.
-<<<<<<< HEAD
 - **`plots/`**: Includes evaluation plots for the churn model.
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 757151b (End-to-End commit)
 - **`images/`**: Includes images and schemas for the project.
 
 ---
