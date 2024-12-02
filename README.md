@@ -9,7 +9,7 @@ This project focuses on churn prediction and Recency, Frequency, Value (RFV) ana
 
 The project employs advanced techniques across several key steps:
 
-## Steps 
+### Steps 
 
 Starting from the transactional database 'database.db' which i will refer as the bronze layer we will do this:
 
@@ -39,13 +39,13 @@ The dataset, sourced from **Teo Calvo’s (Teo Me Why) Twitch Points System**, c
 
 ## Objectives
 
-**Develop a Predictive Model for Churn**
+###### 1. **Develop a Predictive Model for Churn**
 Build a machine learning algorithm to predict the likelihood of churn among Twitch users in Teo's Loyalty System.
 
-**User Segmentation through RFV Analysis**
+###### 2. **User Segmentation through RFV Analysis**
 Implement Recency, Frequency, and Value (RFV) analysis to segment users based on their activity and spending patterns. Categorize active users into stages of their life cycle and classify them into low, medium, and high tiers of engagement and value.
 
-**Create a Churn Decision-Making Framework**
+###### 3. **Create a Churn Decision-Making Framework**
 Design a decision-making table that assigns each active user a churn probability alongside their respective life cycle stage and engagement/value category, providing actionable insights for community management.
 
 ### Database Schema: Bronze Layer
@@ -97,8 +97,11 @@ RFV Analysis: Metrics for user segmentation and marketing.
 The Feature Store comprises four key tables:
 
 **fs_hour:** Captures daily activity patterns.
+
 **fs_points:** Tracks point balances and redemptions over time.
+
 **fs_general**: Provides recency, frequency, and other customer-specific metrics.
+
 **fs_products**: Analyzes product-specific behavior and preferences.
 
 
@@ -239,20 +242,25 @@ In sum, this is how our tables inside the Feature Store will look like:
 
 We automate the ingestion and transformation pipeline using exec.sh, which triggers execute.py. This ensures seamless integration between SQL queries and Python for constructing the feature store.
 
-#### Key Components
+### Key Components
+
 **Parameterized Queries**: SQL queries dynamically accept date ranges ({date}), enabling flexible cohort analysis.
+
 **SQLAlchemy**: Facilitates interactions between SQLite and Python for data ingestion.
+
 **Batch Processing**: Supports continuous integration of new data by appending processed records to feature_store.db.
 
 ### Workflow Steps
 
 **SQL Execution**: Import queries, replace placeholders with date ranges, and execute against the production database.
+
 **Data Ingestion**: Delete outdated records for the specified date range, then append new data.
+
 **Batch Integration**: Process new records incrementally, ensuring up-to-date features for modeling.
 
-# Creating the Analytical Base Table (ABT)
+## Creating the Analytical Base Table (ABT)
 
-## Some Caveats About Time-Series Modeling
+### Some Caveats About Time-Series Modeling
 
 In our time-series modeling, we define a user as part of the **active base** if they have interacted with the platform (performed any transactions or activities) within the last **21 days** (3 weeks) relative to a given **reference date**. It’s important to note that the **active user base** will change based on the reference date we select. By adjusting the reference date in the SQL code, we can observe how the number of active users and their associated statistics shift, while maintaining the same **21-day window** for assessing user activity.
 
@@ -292,13 +300,18 @@ This flexible approach to defining churn and creating cohorts allows for easy ad
 ![Alt text](images/cohorts-and-oot.png)
 
 
-## Joining Feature Store Tables and the Target Variable
+### Joining Feature Store Tables and the Target Variable
 
 The **Analytical Base Table (ABT)** is constructed by joining all features from the Feature Store with the churn flag. This unified dataset serves as the foundation for modeling and evaluation. The modular design ensures that any updates to feature definitions or churn criteria automatically propagate to the ABT.
 
 ---
 
-# SEMMA Framework Integration with MLflow for Churn Prediction
+## SEMMA Framework Integration with MLflow for Churn Prediction
+
+### **Objective** 1. 
+
+**Develop a Predictive Model for Churn**
+Build a machine learning algorithm to predict the likelihood of churn among Twitch users in Teo's Loyalty System.
 
 The churn prediction model follows the **SEMMA** methodology, integrated with **MLflow** for experiment tracking and management. SEMMA consists of:
 
@@ -311,18 +324,18 @@ The churn prediction model follows the **SEMMA** methodology, integrated with **
 
 ![Alt Text](images/SEMMA.png)
 
-## Workflow for Model Development
+### Workflow for Model Development
 
-### 1. Data Import and Preprocessing
+#### 1. Data Import and Preprocessing
 - Data is queried from the **ABT** using `abt.sql` and split into:
   - **Training set**
   - **Out-of-time (OOT) validation set**, representing the most recent data for temporal evaluation.
 
-### 2. Feature Engineering
+#### 2. Feature Engineering
 - **One-hot encoding** is applied to categorical variables.
 - Time-series data is handled using stratified sampling, ensuring robust validation.
 
-### 3. Model Selection and Tuning
+#### 3. Model Selection and Tuning
 - - Various classifiers (e.g., `RandomForest`, `GradientBoosting`, `AdaBoosting`, `BaggingClassifier` and `LightGBMClassifer`) are evaluated.
 - **BaggingClassifier** with `DecisionTreeClassifier` as the base estimator.
 
@@ -375,7 +388,7 @@ After rigorous evaluation, **RandomForest** was selected as the production model
 
 ---
 
-# In-Depth Analysis of Model Performance in the Context of Customer Churn
+## In-Depth Analysis of Model Performance in the Context of Customer Churn
 
 In the `best_model.py` script, we conduct a comprehensive analysis of our model's performance, particularly in addressing the churn problem. The evaluation focuses on the Out-of-Time (OOT) validation set, which reflects real-world conditions. Key findings from this analysis are visualized in the `train/plots` directory and are discussed below.
 
@@ -466,71 +479,44 @@ The maximum separation between the two CDFs (churners and non-churners) is **49%
 Threshold = **0.40**:
 At a probability threshold of **0.40**, the model achieves this maximum separation. This means the model's predictions are most effective at distinguishing churners from non-churners when classifying users with a predicted probability of churn around **40%**.
 
----
+--- This adress our first question 
 
-# User Lifecycle Analysis with RFV Metrics
+1. **Develop a Predictive Model for Churn**
+Build a machine learning algorithm to predict the likelihood of churn among Twitch users in Teo's Loyalty System.
 
-## Assigning Lifecycle Stages: `rfv_recency.py`
-
-Users are categorized into lifecycle stages based on **recency** and **base age**:
-- **New User**: Base age ≤ 7 days.
-- **Super Active User**: Recency ≤ 2 days.
-- **Active User**: Recency ≤ 6 days.
-- **Cold Active**: Recency ≤ 12 days.
-- **Unengaged**: Recency ≤ 18 days.
-- **Pre-Churn**: Recency > 18 days.
-
-### Insights:
-- **Super Active Users** are the largest group, with high engagement and long tenure.
-- **Pre-Churn Users** have the lowest recency and are newer than most other groups, requiring immediate attention.
-
-Lifecycle Distribution:
-| Stage              | Avg. Recency (Days) | Count | Avg. Base Age (Days) |
-|---------------------|---------------------|-------|-----------------------|
-| Super Active User   | 1.23               | 137   | 81.04                |
-| Active User         | 3.59               | 82    | 71.45                |
-| Cold Active         | 9.25               | 63    | 82.84                |
-| Pre-Churn           | 21.00              | 23    | 50.87                |
-| New User            | 2.89               | 56    | 3.63                 |
-
----
-
-## RFV Segmentation: `rfv_frecency.py`
-
-### Process:
-1. Users are segmented using:
-   - **FrequencyDays**: Number of active days in the last 21 days.
-   - **PointsValue**: Total points earned in the last 21 days.
-2. An initial clustering approach suggests **12 segments**, categorized as:
-   - **Low, Medium, High Value** × **Low, Medium, High Frequency**.
-
-### Final RF Segments:
-| Segment | Description                  | Count | Percentage (%) |
-|---------|------------------------------|-------|----------------|
-| LL      | Low Value, Low Frequency     | 218   | 37.71          |
-| LM      | Low Value, Medium Frequency  | 112   | 19.47          |
-| MH      | Medium Value, High Frequency | 34    | 5.92           |
-| MM      | Medium Value, Medium Frequency | 18  | 3.14           |
-| HV      | High Value, Very High Frequency | 14  | 2.43           |
-
-### Key Insights:
-- **LL and LM** users dominate (56%), indicating an opportunity to target these groups with engagement campaigns.
-- **HV** and **HH** segments represent high-value users, crucial for retention efforts.
-
----
-
-This approach combines robust modeling with actionable segmentation, enabling data-driven strategies to retain users and boost community engagement.
+## **User Segmentation through RFV Analysis**
 
 
-| Train    | 0.77    |0.85   | 0.72   | 0.81  |
-| Test     | 0.76  | 0.83  | 0.71    | 0.78  |
-| OOT      | 0.73   | 0.80   | 0.63 | 0.65  |
+### **Objective** 2.
 
----
+Utilize Recency, Frequency, and Value (RFV) analysis to segment users based on their activity and spending patterns. This segmentation categorizes active users into lifecycle stages and engagement tiers (low, medium, high), enabling targeted retention strategies.
 
-# User Lifecycle Analysis with RFV Metrics
+### **Defining Lifecycle Stages**
 
-## Defining Lifecycle Stages (`rfv_recency.py`)
+Lifecycle stages are defined using **recency** (days since last activity) and **base age** (days since user joined the platform). The cumulative distribution of active users based on recency is visualized to establish thresholds for each stage.
+
+#### **Code for Lifecycle Analysis**
+```python
+# Prepare a DataFrame for cumulative recency analysis
+df_recency = df[["recencyDays", "baseAgeDays"]].sort_values(by="recencyDays")
+
+# Add a column to represent each user as a unit
+df_recency['unit'] = 1
+
+# Calculate the cumulative count of users by recency
+df_recency['Cumulative'] = df_recency['unit'].cumsum()
+
+# Compute cumulative percentage of users
+df_recency["Cumulative Percentage"] = df_recency['Cumulative'] / df_recency['Cumulative'].max()
+
+# Plot the cumulative percentage against recency days
+plt.plot(df_recency["recencyDays"], df_recency["Cumulative Percentage"], label="Cumulative Percentage")
+
+We achieve this segmentation: 
+
+![Alt text](images/rfv_recency.png)
+
+This is how i setted the lifecycle stages: 
 
 Users are categorized into **lifecycle stages** based on **recency** (days since last activity) and **base age** (age in days in the base):
 
@@ -543,14 +529,6 @@ Users are categorized into **lifecycle stages** based on **recency** (days since
 | **Unengaged**       | Recency ≤ 18 days            |
 | **Pre-Churn**       | Recency > 18 days            |
 
-### Lifecycle Insights:
-- **Super Active Users**:
-  - Largest group with the highest engagement and long tenure.
-  - **Actionable Insight**: Maintain their loyalty through exclusive content or reward programs.
-- **Pre-Churn Users**:
-  - Lowest recency but newer than most groups, signaling early disengagement.
-  - **Actionable Insight**: Prioritize reactivation campaigns for this segment to prevent churn.
-
 #### Lifecycle Distribution Summary:
 
 | **Stage**           | **Avg. Recency (Days)** | **Count** | **Avg. Base Age (Days)** |
@@ -561,38 +539,107 @@ Users are categorized into **lifecycle stages** based on **recency** (days since
 | **Pre-Churn**       | 21.00                  | 23        | 50.87                   |
 | **New User**        | 2.89                   | 56        | 3.63                    |
 
+
+### Lifecycle Insights:
+- **Super Active Users**:
+  - Largest group with the highest engagement and long tenure.
+  - **Actionable Insight**: Maintain their loyalty through exclusive content or reward programs.
+- **Pre-Churn Users**:
+  - Lowest recency but newer than most groups, signaling early disengagement.
+  - **Actionable Insight**: Use re-engagement campaigns to retain these users.
 ---
 
-## RFV Segmentation: Understanding User Value and Engagement (`rfv_frecency.py`)
+## **RFV Segmentation: Understanding User Value and Engagement**
 
-### Segmentation Process:
-1. **FrequencyDays**: Number of active days within the last 21 days.
-2. **PointsValue**: Total points earned within the last 21 days.
+### **Segmentation Process**
 
-Initial clustering identified **12 segments**, ultimately simplified to **Low, Medium, High Value × Low, Medium, High Frequency**.
+Using frequency and value features, a systematic segmentation approach was implemented as follows:
 
-### Final RFV Segments:
+1. **Scatterplot Creation**  
+   A simple scatterplot visualizing points vs. frequency to identify patterns in user behavior.  
+   ![Scatterplot: Points vs. Frequency](images/points_RFV_scatter.png)
 
-| **Segment** | **Description**              | **Count** | **Percentage (%)** |
-|-------------|------------------------------|-----------|--------------------|
-| **LL**      | Low Value, Low Frequency     | 218       | 37.71             |
-| **LM**      | Low Value, Medium Frequency  | 112       | 19.47             |
-| **MH**      | Medium Value, High Frequency | 34        | 5.92              |
-| **MM**      | Medium Value, Medium Frequency | 18      | 3.14              |
-| **HV**      | High Value, Very High Frequency | 14      | 2.43              |
+2. **Initial Clustering with Agglomerative Clustering**  
+   Agglomerative clustering was applied to group users based on frequency and value, providing a preliminary segmentation for further refinement.  
+   ![Agglomerative Clustering](images/points_RFV_scatter_agg.png)
 
-### Key Insights:
+3. **Threshold Definition**  
+   Visual inspection of the clustering results was used to establish thresholds for segmentation.
+
+4. **Final Segmentation**  
+   Twelve detailed segments were defined based on combinations of **Low, Medium, High Value × Low, Medium, High, Very High Frequency**.  
+   ![Final RFV Segmentation](images/cluster_RFV_final.png)
+
+---
+
+### **Final RFV Segments**
+
+| **Segment** | **Description**                  | **Thresholds**                                   | **Count** | **Percentage (%)** |
+|-------------|----------------------------------|-------------------------------------------------|-----------|--------------------|
+| **LL**      | Low Value, Low Frequency         | `pointsValue < 500` and `frequencyDays < 2.5`   | 218       | 37.71             |
+| **LM**      | Low Value, Medium Frequency      | `pointsValue < 500` and `2.5 ≤ frequencyDays < 8.5` | 112   | 19.47             |
+| **LH**      | Low Value, High Frequency        | `pointsValue < 500` and `8.5 ≤ frequencyDays < 13.5` | 63    | 10.90             |
+| **LV**      | Low Value, Very High Frequency   | `pointsValue < 500` and `frequencyDays ≥ 13.5`  | 20        | 3.46              |
+| **ML**      | Medium Value, Low Frequency      | `500 ≤ pointsValue < 1400` and `frequencyDays < 2.5` | 56    | 9.69              |
+| **MM**      | Medium Value, Medium Frequency   | `500 ≤ pointsValue < 1400` and `2.5 ≤ frequencyDays < 8.5` | 18 | 3.14              |
+| **MH**      | Medium Value, High Frequency     | `500 ≤ pointsValue < 1400` and `8.5 ≤ frequencyDays < 13.5` | 34 | 5.92              |
+| **MV**      | Medium Value, Very High Frequency | `500 ≤ pointsValue < 1400` and `frequencyDays ≥ 13.5` | 10  | 1.73              |
+| **HL**      | High Value, Low Frequency        | `pointsValue ≥ 1400` and `frequencyDays < 2.5` | 8        | 1.38              |
+| **HM**      | High Value, Medium Frequency     | `pointsValue ≥ 1400` and `2.5 ≤ frequencyDays < 8.5` | 5   | 0.87              |
+| **HH**      | High Value, High Frequency       | `pointsValue ≥ 1400` and `8.5 ≤ frequencyDays < 13.5` | 7   | 1.21              |
+| **HV**      | High Value, Very High Frequency  | `pointsValue ≥ 1400` and `frequencyDays ≥ 13.5` | 14       | 2.43              |
+
+---
+
+### **Insights from RFV Segmentation**
+
+- **LL (Low Value, Low Frequency)**: Largest group, representing minimal engagement and contribution.  
+  **Actionable Insight**: Investigate reasons for low activity and implement campaigns to encourage engagement.
+
+- **HV (High Value, Very High Frequency)**: Small but highly valuable segment, critical to retention strategies.  
+  **Actionable Insight**: Reward loyalty and incentivize continued activity with exclusive perks.
+
+- **LM, MH & HH**: Mid-tier users with potential for growth into higher value segments.  
+  **Actionable Insight**: Offer targeted promotions to enhance frequency or value of interactions.
+
+- **LV, MV & HV**: Users with high engagement but varying value levels.  
+  **Actionable Insight**: Design loyalty programs to sustain and enhance activity among these groups.
+
+By leveraging these RFV segments, more tailored strategies can be implemented to improve user retention and maximize value.
+
+### **Final RFV Segments**
+
+| **Segment** | **Description**                   | **Count** | **Percentage (%)** |
+|-------------|-----------------------------------|-----------|--------------------|
+| **LL**      | Low Value, Low Frequency          | 218       | 37.71              |
+| **LM**      | Low Value, Medium Frequency       | 112       | 19.47              |
+| **MH**      | Medium Value, High Frequency      | 34        | 5.92               |
+| **MM**      | Medium Value, Medium Frequency    | 18        | 3.14               |
+| **HV**      | High Value, Very High Frequency   | 14        | 2.43               |
+| **HH**      | High Value, High Frequency        | 8         | 1.38               |
+| **LH**      | Low Value, High Frequency         | 5         | 0.87               |
+| **MV**      | Medium Value, Very High Frequency | 2         | 0.35               |
+| **HL**      | High Value, Low Frequency         | 1         | 0.17               |
+| **ML**      | Medium Value, Low Frequency       | 1         | 0.17               |
+
+---
+
+### **Key Insights**:
+
 - **LL and LM Segments**:
   - Represent **56%** of users, providing an opportunity to design campaigns that enhance engagement and increase lifetime value.
   - **Actionable Insight**: Launch targeted campaigns, such as points incentives or personalized offers, to convert these segments to higher-value categories.
-  
+
 - **HV and HH Segments**:
   - Small but crucial groups that contribute significantly to revenue.
   - **Actionable Insight**: Focus retention efforts here with premium experiences, exclusive content, or VIP programs to sustain their high value.
 
----
+- **LH and MV Segments**:
+  - Users in these segments show potential for growth but may need additional engagement to increase both frequency and value.
+  - **Actionable Insight**: Provide personalized offers or special events to encourage increased activity.
 
-## Business Implications and Next Steps
+---
+## **Business Implications and Next Steps**
 
 1. **Target Top Churn Predictions**:
    - Focus retention efforts on the top 20%-30% of users as predicted by the model.
