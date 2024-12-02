@@ -736,8 +736,7 @@ The project is organized as follows:
 <<<<<<< HEAD
 - **`plots/`**: Includes evaluation plots for the churn model.
 =======
-- **`images/`**: Includes evaluation plots for the project.
->>>>>>> 395f1aa (End-to-End Commit)
+- **`images/`**: Includes images and schemas for the project.
 
 ---
 
