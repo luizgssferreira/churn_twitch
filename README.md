@@ -326,15 +326,7 @@ The churn prediction model follows the **SEMMA** methodology, integrated with **
 - Time-series data is handled using stratified sampling, ensuring robust validation.
 
 ### 3. Model Selection and Tuning
-<<<<<<< HEAD
-- Various classifiers (e.g., `RandomForest`, `GradientBoosting`) are evaluated.
-- **BaggingClassifier** with `DecisionTreeClassifier` as the base estimator is optimized using **GridSearchCV**.
-- Hyperparameters such as `n_estimators`, `max_features`, and `bootstrap` are fine-tuned.
-
-### 4. Model Evaluation
-- Models are assessed using metrics like **ROC AUC**, **accuracy**, **precision**, and **recall** across:
-=======
-- Various classifiers (e.g., `RandomForest`, `GradientBoosting`, `AdaBoosting`, `BaggingClassifier` and `LightGBMClassifer`) are evaluated.
+- - Various classifiers (e.g., `RandomForest`, `GradientBoosting`, `AdaBoosting`, `BaggingClassifier` and `LightGBMClassifer`) are evaluated.
 - **BaggingClassifier** with `DecisionTreeClassifier` as the base estimator.
 
 ### 4. Main Workflow for Model Selection 
@@ -361,14 +353,14 @@ The churn prediction model follows the **SEMMA** methodology, integrated with **
 7. **Performance Reporting**  
    Calculated and logged key performance metrics (e.g., accuracy, precision, recall, ROC AUC) for training, testing, and out-of-time (OOT) datasets for comprehensive model evaluation inside mlflow.
 
-### 4. Model Evaluation
+### 5. Model Evaluation
 - Models are assessed using those performance metrics: **ROC AUC**, **accuracy**, **precision**, and **recall** across:
 
   - **Training set**
   - **Test set**
   - **OOT set**
 
-### 5. MLflow Integration
+### 6. MLflow Integration
 - MLflow tracks metrics and hyperparameters during training.
 - The best-performing model is serialized and saved for deployment.
 
@@ -380,7 +372,6 @@ After rigorous evaluation, **RandomForest** was selected as the production model
 
 | Dataset  | Accuracy | ROC AUC | Precision | Recall |
 |----------|----------|---------|-----------|--------|
-<<<<<<< HEAD
 | Train    | 0.77     | 0.85    | 0.72      | 0.78   |
 | Test     | 0.76     | 0.81    | 0.70      | 0.83   |
 | OOT      | 0.73     | 0.80    | 0.68      | 0.65   |
@@ -461,7 +452,8 @@ Lifecycle Distribution:
 ---
 
 This approach combines robust modeling with actionable segmentation, enabling data-driven strategies to retain users and boost community engagement.
-=======
+
+
 | Train    | 0.77    |0.85   | 0.72   | 0.81  |
 | Test     | 0.76  | 0.83  | 0.71    | 0.78  |
 | OOT      | 0.73   | 0.80   | 0.63 | 0.65  |
