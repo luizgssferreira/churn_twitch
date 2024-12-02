@@ -1,11 +1,10 @@
-<<<<<<< HEAD
 # Churn Prediction for Twitch Users
 
 =======
 # From Points to Predictions: AI-Driven Churn and Engagement Analysis for Twitch
 
 ![Alt text](images/cover.png)
->>>>>>> 395f1aa (End-to-End Commit)
+
 
 ## 📌 Context
 
@@ -18,11 +17,7 @@ The project employs advanced techniques across several key steps:
 Starting from the transactional database 'database.db' which i will refer as the bronze layer we will do this:
 
 - Feature Store Creation: Develop a repository of 62 features that capture user interactions with the Twitch Points System over time.
-<<<<<<< HEAD
-- Cohort Analysis: Group users based on their interaction patterns with the points system.
-=======
 - Cohort Creation and Analysis in Time-Series Data.
->>>>>>> 395f1aa (End-to-End Commit)
 - Target Variable Construction: Define churn using a business rule tailored to the platform.
 - Analytical Base Table (ABT): Build a comprehensive dataset for model training and testing.
 - Out-of-Time (OOT) Dataset: Create a dataset to evaluate model robustness over unseen time periods.
@@ -36,17 +31,14 @@ Twitch is the world’s leading platform for live streaming, hosting millions of
 
 This ecosystem represents a valuable opportunity for creators to monetize their active user base. However, losing active members can significantly impact potential revenue. Identifying users at risk of leaving, as well as understanding their behavior through segmentation, can drive effective retention strategies and informed decision-making.
 
-<<<<<<< HEAD
 =======
 ![Alt text](images/points_system.png)
->>>>>>> 395f1aa (End-to-End Commit)
+
 
 ## Dataset
 
 The dataset, sourced from **Teo Calvo’s (Teo Me Why) Twitch Points System**, captures real-world interactions within a loyalty program. It includes transactional data on point accrual, redemption, and customer behavior. The dataset is available on: https://www.kaggle.com/datasets/teocalvo/teomewhy-loyalty-system/data
 
-<<<<<<< HEAD
-=======
 ![Alt text](images/database_schema.png)
 
 ## Objectives
@@ -60,7 +52,6 @@ Implement Recency, Frequency, and Value (RFV) analysis to segment users based on
 **Create a Churn Decision-Making Framework**
 Design a decision-making table that assigns each active user a churn probability alongside their respective life cycle stage and engagement/value category, providing actionable insights for community management.
 
->>>>>>> 395f1aa (End-to-End Commit)
 ### Database Schema: Bronze Layer
 
 #### `transactions_products`
@@ -245,13 +236,11 @@ The following queries are part of the feature store and are used to generate fea
 | maxQuantityProduct    | The product with the highest quantity purchased by the customer in the last 21 days.                  |
 
 
-<<<<<<< HEAD
-=======
 In sum, this is how our tables inside the Feature Store will look like:
 
 ![Alt text](images/feature-store.png)
 
->>>>>>> 395f1aa (End-to-End Commit)
+
 ### Pipeline for Creating the Feature Store (`exec.sh`)
 
 We automate the ingestion and transformation pipeline using exec.sh, which triggers execute.py. This ensures seamless integration between SQL queries and Python for constructing the feature store.
@@ -269,11 +258,6 @@ We automate the ingestion and transformation pipeline using exec.sh, which trigg
 
 # Creating the Analytical Base Table (ABT)
 
-<<<<<<< HEAD
-# Creating the Analytical Base Table (ABT)
-
-=======
->>>>>>> 395f1aa (End-to-End Commit)
 ## Some Caveats About Time-Series Modeling
 
 In our time-series modeling, we define a user as part of the **active base** if they have interacted with the platform (performed any transactions or activities) within the last **21 days** (3 weeks) relative to a given **reference date**. It’s important to note that the **active user base** will change based on the reference date we select. By adjusting the reference date in the SQL code, we can observe how the number of active users and their associated statistics shift, while maintaining the same **21-day window** for assessing user activity.
@@ -310,11 +294,9 @@ Additionally, the **OOT split** gives us a way to evaluate how the model perform
 
 This flexible approach to defining churn and creating cohorts allows for easy adjustments should the definition of churn evolve, ensuring that we can continuously improve and adapt the model over time.
 
-<<<<<<< HEAD
-=======
+
 ![Alt text](images/cohorts-and-oot.png)
->>>>>>> 395f1aa (End-to-End Commit)
----
+
 
 ## Joining Feature Store Tables and the Target Variable
 
@@ -332,12 +314,8 @@ The churn prediction model follows the **SEMMA** methodology, integrated with **
 4. **Model**: Develop predictive models.
 5. **Assess**: Evaluate model accuracy and reliability.
 
-<<<<<<< HEAD
-=======
 
 ![Alt Text](images/SEMMA.png)
->>>>>>> 395f1aa (End-to-End Commit)
----
 
 ## Workflow for Model Development
 
@@ -388,7 +366,7 @@ The churn prediction model follows the **SEMMA** methodology, integrated with **
 
 ### 4. Model Evaluation
 - Models are assessed using those performance metrics: **ROC AUC**, **accuracy**, **precision**, and **recall** across:
->>>>>>> 395f1aa (End-to-End Commit)
+
   - **Training set**
   - **Test set**
   - **OOT set**
@@ -664,8 +642,6 @@ Initial clustering identified **12 segments**, ultimately simplified to **Low, M
 
 By aligning strategies with these insights, businesses can maximize retention, minimize churn, and enhance overall user value.
 
->>>>>>> 395f1aa (End-to-End Commit)
-
 ## 📈 Insights and Conclusions
 
 In **`customer_profile.py`**, we consolidate the outputs of the churn prediction model, lifecycle segmentation, and frequency-value segmentation into a comprehensive decision-making table. This table provides actionable insights for retention strategies by highlighting:
@@ -762,11 +738,8 @@ The next step is to integrate the project into a **Streamlit** app, creating an 
 
 ### 2. Feature Optimization
 - Analyze feature importance in the **RandomForest** model.
-<<<<<<< HEAD
-- Remove low-contribution variables and retrain the model to enhance performance.
-=======
 - Remove low-contribution variables and retrain the model to enhance performance, increasing the parcimony of the model
->>>>>>> 395f1aa (End-to-End Commit)
+
 
 ### 3. Advanced Use Cases
 - Explore time-based retention campaigns by leveraging churn probabilities.
