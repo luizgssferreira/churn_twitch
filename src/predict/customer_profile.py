@@ -108,5 +108,5 @@ df_final.to_sql(
 print("Customer profiles saved to the 'customer_profile' table in the database in the specified order.")
 
 # End of script
-
+df_final.head(10)
 # %%

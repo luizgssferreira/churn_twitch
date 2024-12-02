@@ -71,3 +71,4 @@ df_predict.to_sql("tb_churn", engine, if_exists='append', index=False)
 print("Table was created!")
 # %%
 print("All tasks done!")
+#%%

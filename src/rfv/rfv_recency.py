@@ -70,14 +70,36 @@ df_recency['Cumulative'] = df_recency['unit'].cumsum()
 # Compute cumulative percentage of users
 df_recency["Cumulative Percentage"] = df_recency['Cumulative'] / df_recency['Cumulative'].max()
 
-# Plot the cumulative recency curve to observe trends
-plt.plot(df_recency["recencyDays"], df_recency["Cumulative Percentage"])
+plt.plot(df_recency["recencyDays"], df_recency["Cumulative Percentage"], label="Cumulative Percentage")
+
+# Define the recency thresholds and their corresponding lifecycle stages
+lifecycle_stages = {
+    2: "Super Active User",
+    6: "Active User",
+    12: "Cold Active",
+    18: "Unengaged",  # 'Unengaged' will be on the left of the last line
+}
+
+# Add vertical lines at specific recencyDays thresholds and label with the lifecycle stages
+for i, (recency, stage) in enumerate(lifecycle_stages.items()):
+    # Place the text to the left of the line for the first 3 stages
+    if i < len(lifecycle_stages) - 1:
+        plt.axvline(x=recency, color='red', linestyle='--')
+        plt.text(recency - 0.2, 0.9, stage, rotation=0, color='red', ha='right', va='top', fontsize=10)
+    # For the last stage (Unengaged and Pre-Churn), place Unengaged to the left and Pre-Churn to the right
+    else:
+        plt.axvline(x=recency, color='red', linestyle='--')
+        plt.text(recency - 0.2, 0.9, "Unengaged", rotation=0, color='red', ha='right', va='top', fontsize=10)
+        plt.text(recency + 0.2, 0.9, "Pre-Churn", rotation=0, color='red', ha='left', va='top', fontsize=10)
+
+# Adding labels and title
 plt.xlabel("Recency (Days)")
 plt.ylabel("Cumulative Percentage")
-plt.title("Cumulative Recency Curve")
-plt.grid()
-plt.show()
+plt.title("Recency segmentation")
+plt.grid(True)
 
+# Show the plot
+plt.show()
 # Assign lifecycle stages to users based on their recency and age
 df_recency['LifeCycle'] = df_recency.apply(life_cycle, axis=1)
 
@@ -91,17 +113,15 @@ result = df_recency.groupby('LifeCycle').agg({
 print("Summary statistics by lifecycle stages:")
 print(result)
 
-#%% Step 4: Build and save a Decision Tree Classifier 
+ #%% Step 4: Build and save a Decision Tree Classifier 
 
 # Prepare the data for training
 # Extract the means of 'recencyDays' and 'baseAgeDays' as features (X) and lifecycle stages as labels (y)
-X = result[['recencyDays', 'baseAgeDays']].values  # Using recencyDays mean as features
-y = result.index  # Lifecycle stages as labels
+
 
 # Train a Decision Tree Classifier
 clf = tree.DecisionTreeClassifier(min_samples_leaf=1, max_depth=None, random_state=42)
-clf.fit(X, y)
-
+clf.fit(df_recency[['recencyDays', 'baseAgeDays']], df_recency['LifeCycle'])
 # Save the trained model and feature names for future use
 model = {
     "model": clf,

@@ -213,3 +213,8 @@ model_freq_value.to_pickle('../../models/cluster_fv_01.pkl')
 # End of script
 
 # %%
+cluster_counts = df['rf_cluster'].value_counts()
+
+# Display the results
+print(cluster_counts)
+#%%

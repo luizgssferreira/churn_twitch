@@ -85,7 +85,7 @@ SELECT
     t5.avgChatLive,
     t5.maxQuantityProduct,
 
-    -- Features from fs_sessions (t6)
+    -- Features from fs_transactions (t6)
     t6.daysCountD21,
     t6.daysCountD14,
     t6.daysCountD7,

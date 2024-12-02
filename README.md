@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 # Churn Prediction for Twitch Users
 
+=======
+# From Points to Predictions: AI-Driven Churn and Engagement Analysis for Twitch
+
+![Alt text](images/cover.png)
+>>>>>>> 395f1aa (End-to-End Commit)
 
 ## 📌 Context
 
@@ -12,7 +18,11 @@ The project employs advanced techniques across several key steps:
 Starting from the transactional database 'database.db' which i will refer as the bronze layer we will do this:
 
 - Feature Store Creation: Develop a repository of 62 features that capture user interactions with the Twitch Points System over time.
+<<<<<<< HEAD
 - Cohort Analysis: Group users based on their interaction patterns with the points system.
+=======
+- Cohort Creation and Analysis in Time-Series Data.
+>>>>>>> 395f1aa (End-to-End Commit)
 - Target Variable Construction: Define churn using a business rule tailored to the platform.
 - Analytical Base Table (ABT): Build a comprehensive dataset for model training and testing.
 - Out-of-Time (OOT) Dataset: Create a dataset to evaluate model robustness over unseen time periods.
@@ -26,11 +36,31 @@ Twitch is the world’s leading platform for live streaming, hosting millions of
 
 This ecosystem represents a valuable opportunity for creators to monetize their active user base. However, losing active members can significantly impact potential revenue. Identifying users at risk of leaving, as well as understanding their behavior through segmentation, can drive effective retention strategies and informed decision-making.
 
+<<<<<<< HEAD
+=======
+![Alt text](images/points_system.png)
+>>>>>>> 395f1aa (End-to-End Commit)
 
 ## Dataset
 
 The dataset, sourced from **Teo Calvo’s (Teo Me Why) Twitch Points System**, captures real-world interactions within a loyalty program. It includes transactional data on point accrual, redemption, and customer behavior. The dataset is available on: https://www.kaggle.com/datasets/teocalvo/teomewhy-loyalty-system/data
 
+<<<<<<< HEAD
+=======
+![Alt text](images/database_schema.png)
+
+## Objectives
+
+**Develop a Predictive Model for Churn**
+Build a machine learning algorithm to predict the likelihood of churn among Twitch users in Teo's Loyalty System.
+
+**User Segmentation through RFV Analysis**
+Implement Recency, Frequency, and Value (RFV) analysis to segment users based on their activity and spending patterns. Categorize active users into stages of their life cycle and classify them into low, medium, and high tiers of engagement and value.
+
+**Create a Churn Decision-Making Framework**
+Design a decision-making table that assigns each active user a churn probability alongside their respective life cycle stage and engagement/value category, providing actionable insights for community management.
+
+>>>>>>> 395f1aa (End-to-End Commit)
 ### Database Schema: Bronze Layer
 
 #### `transactions_products`
@@ -84,6 +114,11 @@ The Feature Store comprises four key tables:
 **fs_general**: Provides recency, frequency, and other customer-specific metrics.
 **fs_products**: Analyzes product-specific behavior and preferences.
 
+<<<<<<< HEAD
+=======
+![Alt text](images/bronze-to-silver-layer.png)
+
+>>>>>>> 395f1aa (End-to-End Commit)
 ### Feature Store: `fs_general.sql`
 ---
 
@@ -210,6 +245,13 @@ The following queries are part of the feature store and are used to generate fea
 | maxQuantityProduct    | The product with the highest quantity purchased by the customer in the last 21 days.                  |
 
 
+<<<<<<< HEAD
+=======
+In sum, this is how our tables inside the Feature Store will look like:
+
+![Alt text](images/feature-store.png)
+
+>>>>>>> 395f1aa (End-to-End Commit)
 ### Pipeline for Creating the Feature Store (`exec.sh`)
 
 We automate the ingestion and transformation pipeline using exec.sh, which triggers execute.py. This ensures seamless integration between SQL queries and Python for constructing the feature store.
@@ -227,8 +269,11 @@ We automate the ingestion and transformation pipeline using exec.sh, which trigg
 
 # Creating the Analytical Base Table (ABT)
 
+<<<<<<< HEAD
 # Creating the Analytical Base Table (ABT)
 
+=======
+>>>>>>> 395f1aa (End-to-End Commit)
 ## Some Caveats About Time-Series Modeling
 
 In our time-series modeling, we define a user as part of the **active base** if they have interacted with the platform (performed any transactions or activities) within the last **21 days** (3 weeks) relative to a given **reference date**. It’s important to note that the **active user base** will change based on the reference date we select. By adjusting the reference date in the SQL code, we can observe how the number of active users and their associated statistics shift, while maintaining the same **21-day window** for assessing user activity.
@@ -265,6 +310,10 @@ Additionally, the **OOT split** gives us a way to evaluate how the model perform
 
 This flexible approach to defining churn and creating cohorts allows for easy adjustments should the definition of churn evolve, ensuring that we can continuously improve and adapt the model over time.
 
+<<<<<<< HEAD
+=======
+![Alt text](images/cohorts-and-oot.png)
+>>>>>>> 395f1aa (End-to-End Commit)
 ---
 
 ## Joining Feature Store Tables and the Target Variable
@@ -283,6 +332,11 @@ The churn prediction model follows the **SEMMA** methodology, integrated with **
 4. **Model**: Develop predictive models.
 5. **Assess**: Evaluate model accuracy and reliability.
 
+<<<<<<< HEAD
+=======
+
+![Alt Text](images/SEMMA.png)
+>>>>>>> 395f1aa (End-to-End Commit)
 ---
 
 ## Workflow for Model Development
@@ -297,12 +351,44 @@ The churn prediction model follows the **SEMMA** methodology, integrated with **
 - Time-series data is handled using stratified sampling, ensuring robust validation.
 
 ### 3. Model Selection and Tuning
+<<<<<<< HEAD
 - Various classifiers (e.g., `RandomForest`, `GradientBoosting`) are evaluated.
 - **BaggingClassifier** with `DecisionTreeClassifier` as the base estimator is optimized using **GridSearchCV**.
 - Hyperparameters such as `n_estimators`, `max_features`, and `bootstrap` are fine-tuned.
 
 ### 4. Model Evaluation
 - Models are assessed using metrics like **ROC AUC**, **accuracy**, **precision**, and **recall** across:
+=======
+- Various classifiers (e.g., `RandomForest`, `GradientBoosting`, `AdaBoosting`, `BaggingClassifier` and `LightGBMClassifer`) are evaluated.
+- **BaggingClassifier** with `DecisionTreeClassifier` as the base estimator.
+
+### 4. Main Workflow for Model Selection 
+### Steps for Hyperparameterization and Cross-Validation
+
+1. **Define Hyperparameter Grid**  
+   Created a grid with parameter ranges for each specific algorithm to explore diverse configurations.
+
+2. **Iterative Search**  
+   Utilized `ParameterGrid` to systematically generate all possible hyperparameter combinations for evaluation.
+
+3. **Cross-Validation**  
+   Applied 3-fold cross-validation for each combination using `cross_val_score`, with the primary metric being the mean ROC AUC score.
+
+4. **Progress Tracking**  
+   Integrated a progress bar (`tqdm`) to track the progress of the grid search iterations and ensure efficient monitoring.
+
+5. **Select Best Parameters**  
+   Identified the hyperparameter combination with the highest ROC AUC score as the optimal configuration.
+
+6. **Refit Model**  
+   Re-trained the model pipeline with the best hyperparameters on the entire training dataset for final evaluation.
+
+7. **Performance Reporting**  
+   Calculated and logged key performance metrics (e.g., accuracy, precision, recall, ROC AUC) for training, testing, and out-of-time (OOT) datasets for comprehensive model evaluation inside mlflow.
+
+### 4. Model Evaluation
+- Models are assessed using those performance metrics: **ROC AUC**, **accuracy**, **precision**, and **recall** across:
+>>>>>>> 395f1aa (End-to-End Commit)
   - **Training set**
   - **Test set**
   - **OOT set**
@@ -319,6 +405,7 @@ After rigorous evaluation, **RandomForest** was selected as the production model
 
 | Dataset  | Accuracy | ROC AUC | Precision | Recall |
 |----------|----------|---------|-----------|--------|
+<<<<<<< HEAD
 | Train    | 0.77     | 0.85    | 0.72      | 0.78   |
 | Test     | 0.76     | 0.81    | 0.70      | 0.83   |
 | OOT      | 0.73     | 0.80    | 0.68      | 0.65   |
@@ -399,6 +486,185 @@ Lifecycle Distribution:
 ---
 
 This approach combines robust modeling with actionable segmentation, enabling data-driven strategies to retain users and boost community engagement.
+=======
+| Train    | 0.77    |0.85   | 0.72   | 0.81  |
+| Test     | 0.76  | 0.83  | 0.71    | 0.78  |
+| OOT      | 0.73   | 0.80   | 0.63 | 0.65  |
+
+---
+
+# In-Depth Analysis of Model Performance in the Context of Customer Churn
+
+In the `best_model.py` script, we conduct a comprehensive analysis of our model's performance, particularly in addressing the churn problem. The evaluation focuses on the Out-of-Time (OOT) validation set, which reflects real-world conditions. Key findings from this analysis are visualized in the `train/plots` directory and are discussed below.
+
+### **Evaluating Model Recall through Cumulative Gains**
+
+To assess the model's ability to identify churners, we analyze its performance across different probability thresholds. By ranking users based on their predicted likelihood of churn, the model allows prioritization of high-risk segments. Here’s a breakdown:
+
+1. **Top 20% of Users by Predicted Churn Probability**  
+   Targeting the top 20% of users with the highest churn probabilities captures nearly 40% of all actual churners. This represents **double the effectiveness** of a random baseline model, which would capture only 20%.
+
+2. **Top 30% of Users**  
+   Expanding the coverage to the top 30% captures approximately 50% of churners.
+
+3. **Full Dataset**  
+   Covering 80% of the dataset enables the identification of 100% of churners. This progression is visualized in the cumulative gains plot below:
+
+![Cumulative Gain Curve](images/cumulative_gain_curve_oot.png)
+
+### **Lift Curve: Quantifying Model Effectiveness**
+
+The lift curve further highlights the model's predictive strength by comparing its performance against a random baseline. For instance:
+
+- By targeting the top 20% of users, the model captures **twice as many churners** compared to random selection.
+
+Additionally, focusing on the top 100 users with the highest churn probabilities yields:
+- **Model Performance**: 72% of these users are actual churners.
+- **Baseline Performance**: Only 37% would be churners, based on the dataset's overall churn rate.
+
+This improvement is consistent with the lift curve, emphasizing the model’s strong ability to prioritize churn risks.
+
+![Lift Curve](images/lift_curve_oot.png)
+
+### **Precision-Recall Curve Analysis**
+
+The Precision-Recall (PR) curve provides crucial insights into how well the model handles the imbalanced churn dataset. Key takeaways include:
+
+1. **Class 1 (Churn)**:
+   - Precision starts high but decreases as recall increases, reflecting the challenge of maintaining precision when capturing more churners.
+   - The area under the curve (AUC) for churners is **0.674**, highlighting good model performance.
+
+2. **Class 0 (Non-Churn)**:
+   - The AUC is **0.889**, demonstrating robust performance in identifying non-churners.
+
+3. **Micro-Averaged Curve**:
+   - AUC = **0.830**, summarizing overall model performance across both classes.
+
+The PR curve underscores the model's capability to balance precision and recall effectively, especially for identifying churners (Class 1).
+
+![Precision-Recall Curve](images/pr_curve_oot.png)
+
+### **ROC Curve Analysis**
+
+The Receiver Operating Characteristic (ROC) curve evaluates the model’s ability to distinguish between churners (Class 1) and non-churners (Class 0). Key insights include:
+
+1. **Class 0 and Class 1**:
+   - Both classes achieve an AUC of **0.81**, indicating good discrimination.
+
+2. **Micro-Averaged Curve**:
+   - AUC = **0.82**, reflecting strong overall performance.
+
+3. **Macro-Averaged Curve**:
+   - AUC = **0.81**, consistent with individual class performance.
+
+The ROC curve confirms the model's effectiveness in separating the two classes, with a balance between True Positive Rate (TPR) and False Positive Rate (FPR).
+
+![ROC Curve](images/roc_curve_oot.png)
+
+### KS Statistic: Measuring Model Discrimination
+
+To further validate the model's performance, we use the KS (Kolmogorov-Smirnov) statistic. The KS statistic measures the maximum separation between the cumulative distribution functions (CDFs) of two groups—in this case, churners (positive class, Class 1) and non-churners (negative class, Class 0). The statistic helps evaluate the ability of a model to distinguish between these two classes. A higher KS value indicates better discriminatory power.
+
+In this sense: 
+
+- A higher KS value indicates better discrimination. Ideally, the model should produce well-separated probability distributions for the two classes.
+
+#### Results
+Using the following code:
+
+```python
+skplt.metrics.plot_ks_statistic(df_OOT[target], y_oot_proba, title="KS Statistic (Class 1 = Churn) - OOT")
+```
+
+![Alt Text](images/ks_statistic_oot.png)
+
+KS Value = **0.49**:
+The maximum separation between the two CDFs (churners and non-churners) is **49%**, which is a strong indication that the model can effectively differentiate between the two groups.
+
+Threshold = **0.40**:
+At a probability threshold of **0.40**, the model achieves this maximum separation. This means the model's predictions are most effective at distinguishing churners from non-churners when classifying users with a predicted probability of churn around **40%**.
+
+# User Lifecycle Analysis with RFV Metrics
+
+## Defining Lifecycle Stages (`rfv_recency.py`)
+
+Users are categorized into **lifecycle stages** based on **recency** (days since last activity) and **base age** (age in days in the base):
+
+| **Lifecycle Stage** | **Definition**                |
+|---------------------|-------------------------------|
+| **New User**        | Base age ≤ 7 days            |
+| **Super Active**    | Recency ≤ 2 days             |
+| **Active**          | Recency ≤ 6 days             |
+| **Cold Active**     | Recency ≤ 12 days            |
+| **Unengaged**       | Recency ≤ 18 days            |
+| **Pre-Churn**       | Recency > 18 days            |
+
+### Lifecycle Insights:
+- **Super Active Users**:
+  - Largest group with the highest engagement and long tenure.
+  - **Actionable Insight**: Maintain their loyalty through exclusive content or reward programs.
+- **Pre-Churn Users**:
+  - Lowest recency but newer than most groups, signaling early disengagement.
+  - **Actionable Insight**: Prioritize reactivation campaigns for this segment to prevent churn.
+
+#### Lifecycle Distribution Summary:
+
+| **Stage**           | **Avg. Recency (Days)** | **Count** | **Avg. Base Age (Days)** |
+|---------------------|-------------------------|-----------|--------------------------|
+| **Super Active**    | 1.23                   | 137       | 81.04                   |
+| **Active**          | 3.59                   | 82        | 71.45                   |
+| **Cold Active**     | 9.25                   | 63        | 82.84                   |
+| **Pre-Churn**       | 21.00                  | 23        | 50.87                   |
+| **New User**        | 2.89                   | 56        | 3.63                    |
+
+---
+
+## RFV Segmentation: Understanding User Value and Engagement (`rfv_frecency.py`)
+
+### Segmentation Process:
+1. **FrequencyDays**: Number of active days within the last 21 days.
+2. **PointsValue**: Total points earned within the last 21 days.
+
+Initial clustering identified **12 segments**, ultimately simplified to **Low, Medium, High Value × Low, Medium, High Frequency**.
+
+### Final RFV Segments:
+
+| **Segment** | **Description**              | **Count** | **Percentage (%)** |
+|-------------|------------------------------|-----------|--------------------|
+| **LL**      | Low Value, Low Frequency     | 218       | 37.71             |
+| **LM**      | Low Value, Medium Frequency  | 112       | 19.47             |
+| **MH**      | Medium Value, High Frequency | 34        | 5.92              |
+| **MM**      | Medium Value, Medium Frequency | 18      | 3.14              |
+| **HV**      | High Value, Very High Frequency | 14      | 2.43              |
+
+### Key Insights:
+- **LL and LM Segments**:
+  - Represent **56%** of users, providing an opportunity to design campaigns that enhance engagement and increase lifetime value.
+  - **Actionable Insight**: Launch targeted campaigns, such as points incentives or personalized offers, to convert these segments to higher-value categories.
+  
+- **HV and HH Segments**:
+  - Small but crucial groups that contribute significantly to revenue.
+  - **Actionable Insight**: Focus retention efforts here with premium experiences, exclusive content, or VIP programs to sustain their high value.
+
+---
+
+## Business Implications and Next Steps
+
+1. **Target Top Churn Predictions**:
+   - Focus retention efforts on the top 20%-30% of users as predicted by the model.
+
+2. **Preventative Engagement**:
+   - Address early disengagement in **Pre-Churn Users** with tailored reactivation strategies.
+
+3. **Upgrade Low/Medium Segments**:
+   - Incentivize **LL and LM users** through campaigns designed to increase frequency and engagement.
+
+4. **Reward High-Value Users**:
+   - Invest in retention strategies for **HV and HH segments**, ensuring long-term loyalty and consistent revenue.
+
+By aligning strategies with these insights, businesses can maximize retention, minimize churn, and enhance overall user value.
+
+>>>>>>> 395f1aa (End-to-End Commit)
 
 ## 📈 Insights and Conclusions
 
@@ -478,7 +744,11 @@ The project is organized as follows:
 - **`data/`**: Contains raw and processed databases.
 - **`models/`**: Stores trained models for segmentation and churn prediction.
 - **`src/`**: Houses scripts for feature engineering, training, and prediction.
+<<<<<<< HEAD
 - **`plots/`**: Includes evaluation plots for the churn model.
+=======
+- **`images/`**: Includes evaluation plots for the project.
+>>>>>>> 395f1aa (End-to-End Commit)
 
 ---
 
@@ -492,7 +762,11 @@ The next step is to integrate the project into a **Streamlit** app, creating an 
 
 ### 2. Feature Optimization
 - Analyze feature importance in the **RandomForest** model.
+<<<<<<< HEAD
 - Remove low-contribution variables and retrain the model to enhance performance.
+=======
+- Remove low-contribution variables and retrain the model to enhance performance, increasing the parcimony of the model
+>>>>>>> 395f1aa (End-to-End Commit)
 
 ### 3. Advanced Use Cases
 - Explore time-based retention campaigns by leveraging churn probabilities.

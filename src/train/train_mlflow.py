@@ -7,7 +7,6 @@ import datetime
 import mlflow
 from tqdm import tqdm
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.naive_bayes import ComplementNB
 from sklearn import ensemble, model_selection, pipeline, preprocessing, metrics
 from feature_engine import encoding
 #%%
@@ -90,11 +89,11 @@ with mlflow.start_run():
 
     # Define hyperparameter grid
     params = {
-        "n_estimators": [10, 50, 100, 200],    # Number of base estimators
-        "max_samples": [0.5, 0.7, 1.0],        # Fraction of samples to draw
-        "max_features": [0.5, 0.7, 1.0],       # Fraction of features to draw
-        "bootstrap": [True, False],            # Use bootstrap sampling
-        "bootstrap_features": [True, False]    # Bootstrap features
+    "n_estimators": [10, 50, 100, 200, 500, 1000],  # Larger range of base estimators
+    "max_samples": [0.2, 0.5, 0.7, 0.9, 1.0],       # Broader fractions of samples to draw
+    "max_features": [0.2, 0.5, 0.7, 0.9, 1.0],      # Broader fractions of features to draw
+    "bootstrap": [True, False],                     # Keep both options
+    "bootstrap_features": [True, False]             # Keep both options
     }
 
     # Initialize the tqdm progress bar
@@ -171,7 +170,7 @@ with mlflow.start_run():
 
 model_series = pd.Series({"model" : model_pipeline,
                           "features": features, 
-                          "metrics" : df_metrics,
+                          "metrics" : report,
                           "dt_train" : datetime.datetime.now()})
 
 model_series.to_pickle("../../models/rf_01.pkl")
