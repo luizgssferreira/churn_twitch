@@ -28,7 +28,6 @@ Twitch is the world’s leading platform for live streaming, hosting millions of
 
 This ecosystem represents a valuable opportunity for creators to monetize their active user base. However, losing active members can significantly impact potential revenue. Identifying users at risk of leaving, as well as understanding their behavior through segmentation, can drive effective retention strategies and informed decision-making.
 
-=======
 ![Alt text](images/points_system.png)
 
 
@@ -102,11 +101,9 @@ The Feature Store comprises four key tables:
 **fs_general**: Provides recency, frequency, and other customer-specific metrics.
 **fs_products**: Analyzes product-specific behavior and preferences.
 
-<<<<<<< HEAD
-=======
+
 ![Alt text](images/bronze-to-silver-layer.png)
 
->>>>>>> 395f1aa (End-to-End Commit)
 ### Feature Store: `fs_general.sql`
 ---
 
@@ -378,88 +375,6 @@ After rigorous evaluation, **RandomForest** was selected as the production model
 
 ---
 
-# Analyzing Model Performance
-
-## Cumulative Gains Analysis
-
-### Highlights:
-- **Top 20% of Users by Predicted Churn**:
-  - Captures **40% of actual churners** (double the baseline).
-- **Top 30% of Users**:
-  - Captures **50% of actual churners**.
-- These insights guide targeted retention efforts.
-
-## Lift Curve Insights
-- **Model vs. Baseline**:
-  - In the top 100 users, the model identifies **88% churners** (compared to 44% by random chance).
-- Demonstrates the model’s effectiveness in prioritizing high-risk users.
-
-## KS Statistic (Kolmogorov-Smirnov)
-- Evaluates model discrimination between churners and non-churners.
-- High KS values confirm strong separation of probability distributions.
-
----
-
-# User Lifecycle Analysis with RFV Metrics
-
-## Assigning Lifecycle Stages: `rfv_recency.py`
-
-Users are categorized into lifecycle stages based on **recency** and **base age**:
-- **New User**: Base age ≤ 7 days.
-- **Super Active User**: Recency ≤ 2 days.
-- **Active User**: Recency ≤ 6 days.
-- **Cold Active**: Recency ≤ 12 days.
-- **Unengaged**: Recency ≤ 18 days.
-- **Pre-Churn**: Recency > 18 days.
-
-### Insights:
-- **Super Active Users** are the largest group, with high engagement and long tenure.
-- **Pre-Churn Users** have the lowest recency and are newer than most other groups, requiring immediate attention.
-
-Lifecycle Distribution:
-| Stage              | Avg. Recency (Days) | Count | Avg. Base Age (Days) |
-|---------------------|---------------------|-------|-----------------------|
-| Super Active User   | 1.23               | 137   | 81.04                |
-| Active User         | 3.59               | 82    | 71.45                |
-| Cold Active         | 9.25               | 63    | 82.84                |
-| Pre-Churn           | 21.00              | 23    | 50.87                |
-| New User            | 2.89               | 56    | 3.63                 |
-
----
-
-## RFV Segmentation: `rfv_frecency.py`
-
-### Process:
-1. Users are segmented using:
-   - **FrequencyDays**: Number of active days in the last 21 days.
-   - **PointsValue**: Total points earned in the last 21 days.
-2. An initial clustering approach suggests **12 segments**, categorized as:
-   - **Low, Medium, High Value** × **Low, Medium, High Frequency**.
-
-### Final RF Segments:
-| Segment | Description                  | Count | Percentage (%) |
-|---------|------------------------------|-------|----------------|
-| LL      | Low Value, Low Frequency     | 218   | 37.71          |
-| LM      | Low Value, Medium Frequency  | 112   | 19.47          |
-| MH      | Medium Value, High Frequency | 34    | 5.92           |
-| MM      | Medium Value, Medium Frequency | 18  | 3.14           |
-| HV      | High Value, Very High Frequency | 14  | 2.43           |
-
-### Key Insights:
-- **LL and LM** users dominate (56%), indicating an opportunity to target these groups with engagement campaigns.
-- **HV** and **HH** segments represent high-value users, crucial for retention efforts.
-
----
-
-This approach combines robust modeling with actionable segmentation, enabling data-driven strategies to retain users and boost community engagement.
-
-
-| Train    | 0.77    |0.85   | 0.72   | 0.81  |
-| Test     | 0.76  | 0.83  | 0.71    | 0.78  |
-| OOT      | 0.73   | 0.80   | 0.63 | 0.65  |
-
----
-
 # In-Depth Analysis of Model Performance in the Context of Customer Churn
 
 In the `best_model.py` script, we conduct a comprehensive analysis of our model's performance, particularly in addressing the churn problem. The evaluation focuses on the Out-of-Time (OOT) validation set, which reflects real-world conditions. Key findings from this analysis are visualized in the `train/plots` directory and are discussed below.
@@ -550,6 +465,68 @@ The maximum separation between the two CDFs (churners and non-churners) is **49%
 
 Threshold = **0.40**:
 At a probability threshold of **0.40**, the model achieves this maximum separation. This means the model's predictions are most effective at distinguishing churners from non-churners when classifying users with a predicted probability of churn around **40%**.
+
+---
+
+# User Lifecycle Analysis with RFV Metrics
+
+## Assigning Lifecycle Stages: `rfv_recency.py`
+
+Users are categorized into lifecycle stages based on **recency** and **base age**:
+- **New User**: Base age ≤ 7 days.
+- **Super Active User**: Recency ≤ 2 days.
+- **Active User**: Recency ≤ 6 days.
+- **Cold Active**: Recency ≤ 12 days.
+- **Unengaged**: Recency ≤ 18 days.
+- **Pre-Churn**: Recency > 18 days.
+
+### Insights:
+- **Super Active Users** are the largest group, with high engagement and long tenure.
+- **Pre-Churn Users** have the lowest recency and are newer than most other groups, requiring immediate attention.
+
+Lifecycle Distribution:
+| Stage              | Avg. Recency (Days) | Count | Avg. Base Age (Days) |
+|---------------------|---------------------|-------|-----------------------|
+| Super Active User   | 1.23               | 137   | 81.04                |
+| Active User         | 3.59               | 82    | 71.45                |
+| Cold Active         | 9.25               | 63    | 82.84                |
+| Pre-Churn           | 21.00              | 23    | 50.87                |
+| New User            | 2.89               | 56    | 3.63                 |
+
+---
+
+## RFV Segmentation: `rfv_frecency.py`
+
+### Process:
+1. Users are segmented using:
+   - **FrequencyDays**: Number of active days in the last 21 days.
+   - **PointsValue**: Total points earned in the last 21 days.
+2. An initial clustering approach suggests **12 segments**, categorized as:
+   - **Low, Medium, High Value** × **Low, Medium, High Frequency**.
+
+### Final RF Segments:
+| Segment | Description                  | Count | Percentage (%) |
+|---------|------------------------------|-------|----------------|
+| LL      | Low Value, Low Frequency     | 218   | 37.71          |
+| LM      | Low Value, Medium Frequency  | 112   | 19.47          |
+| MH      | Medium Value, High Frequency | 34    | 5.92           |
+| MM      | Medium Value, Medium Frequency | 18  | 3.14           |
+| HV      | High Value, Very High Frequency | 14  | 2.43           |
+
+### Key Insights:
+- **LL and LM** users dominate (56%), indicating an opportunity to target these groups with engagement campaigns.
+- **HV** and **HH** segments represent high-value users, crucial for retention efforts.
+
+---
+
+This approach combines robust modeling with actionable segmentation, enabling data-driven strategies to retain users and boost community engagement.
+
+
+| Train    | 0.77    |0.85   | 0.72   | 0.81  |
+| Test     | 0.76  | 0.83  | 0.71    | 0.78  |
+| OOT      | 0.73   | 0.80   | 0.63 | 0.65  |
+
+---
 
 # User Lifecycle Analysis with RFV Metrics
 
