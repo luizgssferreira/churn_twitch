@@ -38,13 +38,13 @@ The dataset, sourced from **Teo Calvo’s (Teo Me Why) Twitch Points System**, c
 
 ## Objectives
 
-###### 1. **Develop a Predictive Model for Churn**
+##### 1. **Develop a Predictive Model for Churn**
 Build a machine learning algorithm to predict the likelihood of churn among Twitch users in Teo's Loyalty System.
 
-###### 2. **User Segmentation through RFV Analysis**
+##### 2. **User Segmentation through RFV Analysis**
 Implement Recency, Frequency, and Value (RFV) analysis to segment users based on their activity and spending patterns. Categorize active users into stages of their life cycle and classify them into low, medium, and high tiers of engagement and value.
 
-###### 3. **Create a Churn Decision-Making Framework**
+##### 3. **Create a Churn Decision-Making Framework**
 Design a decision-making table that assigns each active user a churn probability alongside their respective life cycle stage and engagement/value category, providing actionable insights for community management.
 
 ### Database Schema: Bronze Layer
@@ -289,8 +289,6 @@ The **`abt.sql`** query is designed to flag churn based on the following logic:
 
 ### Adjusting for Cohorts and OOT:
 
-Since we are working with multiple cohorts, we ensure that each cohort is considered on the **1st day of the month** for its respective reference date. This way, we avoid the problem of tracking super-active users who could dominate the model if we used a different approach (e.g., looking at all active users across a given month).
-
 Additionally, the **OOT split** gives us a way to evaluate how the model performs on data from a future period, without having seen it during training. This is crucial for ensuring the model's ability to generalize and adapt to future trends in user behavior.
 
 This flexible approach to defining churn and creating cohorts allows for easy adjustments should the definition of churn evolve, ensuring that we can continuously improve and adapt the model over time.
@@ -328,6 +326,7 @@ The churn prediction model follows the **SEMMA** methodology, integrated with **
 #### 1. Data Import and Preprocessing
 - Data is queried from the **ABT** using `abt.sql` and split into:
   - **Training set**
+  - **Test set**
   - **Out-of-time (OOT) validation set**, representing the most recent data for temporal evaluation.
 
 #### 2. Feature Engineering
@@ -436,7 +435,7 @@ The Precision-Recall (PR) curve provides crucial insights into how well the mode
 
 The PR curve underscores the model's capability to balance precision and recall effectively, especially for identifying churners (Class 1).
 
-![Precision-Recall Curve](images/pr_curve_oot.png)
+![Precision-Recall Curve](images/precision_recall_curve_oot.png)
 
 ### **ROC Curve Analysis**
 
@@ -659,7 +658,7 @@ By aligning strategies with these insights, businesses can maximize retention, m
 
 ### **Objective** 3. 
 
-**Create a Churn Decision-Making Framework**
+**Create a Churn Decision-Making Framework (Gold Layer)**
 
 In **`customer_profile.py`**, we consolidate the outputs of the churn prediction model, lifecycle segmentation, and frequency-value segmentation into a comprehensive decision-making table. This table provides actionable insights for retention strategies by highlighting:
 
@@ -738,10 +737,6 @@ The project is organized as follows:
 - **`models/`**: Stores trained models for segmentation and churn prediction.
 - **`src/`**: Houses scripts for feature engineering, training, and prediction.
 - **`plots/`**: Includes evaluation plots for the churn model.
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 757151b (End-to-End commit)
 - **`images/`**: Includes images and schemas for the project.
 
 ---
