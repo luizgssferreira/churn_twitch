@@ -759,3 +759,5 @@ The next step is to integrate the project into a **Streamlit** app, creating an 
 - Tailor strategies for key lifecycle segments, such as **Cold Active** or **Pre-Churn** users.
 
 By integrating predictive analytics with actionable insights, this project delivers a robust tool for Twitch user retention.
+
+hi
