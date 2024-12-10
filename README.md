@@ -1,6 +1,6 @@
 # From Points to Predictions: AI-Driven Churn and Engagement Analysis for Twitch
 
-![Alt text](images/cover.png)
+![Cover](images/cover.png)
 
 
 ## 📌 Context
